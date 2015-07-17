@@ -12,8 +12,6 @@ import sqlite3
 
 database  = 'charm_shift.db'
 set_table = 'settings'
-pos_table = 'BPMs_and_MWPC'
-int_table = 'Intensity_detectors'
 user_table = 'User_info'
 msg_table = 'messages'
 
@@ -29,9 +27,7 @@ class db_commands:
         '''
         self.load_db()
         # Make sure that tables exist
-        self.cur.execute('create table if not exists ' + set_table + ' (id int, name text, setting int)')
-        self.cur.execute('create table if not exists ' + pos_table + ' (id int, name text, x_intensity float, x_fwhm float, y_intesity float, y_fwhm float)')
-        self.cur.execute('create table if not exists ' + int_table + ' (id int, name text, intensity float)')
+        self.cur.execute('create table if not exists ' + set_table + ' (id INTEGER PRIMARY KEY, name text, setting int)')
         self.cur.execute('create table if not exists ' + user_table + ' (id integer priamry key, name text, email text, phone int)')
         self.cur.execute('create table if not exists ' + msg_table + ' (id INTEGER PRIMARY KEY, time text, msg text, status int)')
         self.con.commit()
@@ -57,31 +53,31 @@ class db_commands:
       self.close_db()
 
     def insert_setting(self, data):
-      if len(data) != 3:
+      if len(data) != 2:
         print("ERROR: A row in settings has 3 columns, not " + str(len(data)) + "!")
         return -1
       self.load_db()
-      self.cur.execute("insert into " + set_table + " values(?,?,?)", data)
+      # Insert new setting if one with the same name does not exist
+      # else update the setting
+      # I am unsure if this is the best way of doing it 
+      # Using insert or ingore might be a better method
+      self.cur.execute("select rowid from settings where name = ?",(data[0],))
+      row = self.cur.fetchone()
+      if row is None:
+        self.cur.execute("insert into " + set_table + "(name, setting)" " values(?,?)", data)
+      else:
+        self.cur.execute("update settings set setting=? where name=?",(data[1],data[0]))
       self.con.commit()
       self.close_db()
 
-    def insert_int_detector(self, data):
-      if len(data) != 6:
-        print("ERROR: A row in settings has 6 columns, not " + str(len(data)) + "!")
+    def get_setting(self, settingname):
+      if type(settingname) != str:
+        print("ERROR: must supply setting name as a string")
         return -1
       self.load_db()
-      self.cur.execute("insert into " + int_table + " values(?,?,?)", data)
-      self.con.commit()
-      self.close_db()
-
-    def insert_pos_detector(self, data):
-      if len(data) != 3:
-        print("ERROR: A row in settings has 3 columns, not " + str(len(data)) + "!")
-        return -1
-      self.load_db()
-      self.cur.execute("insert into " + pos_table + " values(?,?,?)", data)
-      self.con.commit()
-      self.close_db()
+      self.cur.execute("select * from settings where name="+settingname)
+      setting = self.cur.fetchone()
+      return setting
 
     def insert_msg(self, data):
       if len(data) != 3:
@@ -99,7 +95,6 @@ class db_commands:
       msg = self.cur.fetchone() 
       return msg
 
-
     def print_tables(self):
       self.load_db()
       self.cur.execute("select * from messages")
@@ -111,10 +106,7 @@ class db_commands:
     def remove_all(self):
       self.load_db()
       self.cur.execute("delete from " + set_table)
-      self.cur.execute("delete from " + pos_table)
-      self.cur.execute("delete from " + int_table)
+      self.cur.execute("delete from " + msg_table)
+      self.cur.execute("delete from " + user_table)
       self.con.commit()
       self.close_db()
-        
-    #cur.execute("insert into " + set_table + " values(1,'timer',10)")
-    #con.commit()

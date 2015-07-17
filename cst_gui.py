@@ -3,19 +3,28 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from cst import Ui_MainWindow
+from database_ctrl import db_commands
 
-class Window(QMainWindow, Ui_MainWindow):
+class GUI(QMainWindow, Ui_MainWindow):
   def __init__(self, parent = None):
 
     QMainWindow.__init__(self, parent)
 
     self.setupUi(self)
 
+  def update_msg(self, msg):
+    _translate = QCoreApplication.translate
+    self.plainTextEdit.setPlainText(_translate("MainWindow", msg))
+
 if __name__ == '__main__':
   cst = QApplication(sys.argv)
-  window = Window()
+  window = GUI()
 
   window.show()
+  db_cmd = db_commands()
+  msg = db_cmd.get_last_msg()
+  print(msg)
+  window.update_msg(msg[2])
   #appLabel = QQuickView()
   #appLabel.setSource(QUrl('cst.qml'))
 

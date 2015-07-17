@@ -2,10 +2,10 @@ from data_retriver import BPM, MWPC, SEC
 from datetime import datetime, timedelta
 from database_ctrl import *
 from email_tools import alert
+from database_ctrl import db_commands
 import time
 import urllib
 
-deviation = .3
 tf = '%Y-%m-%d %H:%M:%S'
 calibration = {
     'SEC1': 2.2E7
@@ -29,6 +29,9 @@ def bpm_msg(data, axis):
   # BPMs are numbered 1 through 4
   # index 0 contains refrence data,
   # and the last index contains the most recent sampling
+  db_cmd = db_commands()
+  deviation = db_cmd.get_setting('deviation')
+  del db_cmd
   check_centre = False
   check_fwhm = False
   msg = axis 
@@ -53,13 +56,17 @@ def check_BPM():
   return xmsg, ymsg, xcentre, xfwhm, ycentre, yfwhm, bpm_error
 
 def check_MWPC():
+  db_cmd = db_commands()
+  ref_fv = db_cmd.get_setting('mwpc_V_FWHM')
+  ref_fh = db_cmd.get_setting('mwpc_H_FWHM')
+  ref_cv = db_cmd.get_setting('mwpc_V_center')
+  ref_ch = db_cmd.get_setting('mwpc_H_centre')
+  deviation = db_cmd.get_setting('deviation')
+  del db_cmd
   m = MWPC()
-  ref_fv = 67
-  ref_fh = 89
-  ref_cv = 1.6
-  ref_ch = 6.5
   msg = ""
-  v_intensity, h_intensity, fwhm_v, fwhm_h, centre_v, centre_h = m.get_data()
+  fwhm_v, fwhm_h, centre_v, centre_h = m.get_data()
+  print ("MWPC: fwhm v: " + str(fwhm_v) + " fwhm_h: " + str(fwhm_h) + " centre_v: " + str(centre_v) + " centre_h: " + str(centre_h))
   if abs(centre_v) > (1+deviation)*ref_cv:
     msg += "MWPC vertical center offset: " + str(centre_v) + " mm\n"
   if abs(centre_h) > (1+deviation)*ref_ch:
@@ -71,6 +78,9 @@ def check_MWPC():
   return msg
 
 def check_SEC():
+  db_cmd = db_commands()
+  deviation = db_cmd.get_setting('deviation')
+  del db_cmd
   s = SEC()
   data = s.get_data()
   reference = 3.5e11
@@ -80,6 +90,7 @@ def check_SEC():
   try:
     intensity = (data['pot/spill'].mean())
     last_spill = data.index[-1]
+    print ("SEC intensity: " + str(intensity))
   except:
     return warning
   if ((intensity > (1+deviation)*reference) or (intensity < (1-deviation)*reference)):
@@ -87,6 +98,7 @@ def check_SEC():
   return msg
 
 def running():
+
   while True:
     xmsg = ""
     ymsg = ""
@@ -135,7 +147,7 @@ def running():
           alert("Notice CHARM beam is up again", "Beam up again at " + t_now, 'charm_shift_tool@cern.ch', 'eino.juhani.oltedal@cern.ch')
           dbc.insert_msg((t_now, "Beam up again.", 1))
     del dbc
-    time.sleep(300)
+    time.sleep(600)
 
 if __name__ == "__main__":
     running()
