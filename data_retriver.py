@@ -7,7 +7,7 @@ import numpy as np
 from archive.database_call_v0 import lgdb_tools
 from datetime import datetime, timedelta
 import pandas as pd
-import urlib
+import urllib
 
 bpm_url = "https://ps-irrad.web.cern.ch/irrad/bpm.php?bpmid=BPM_0"
 tf = '%Y-%m-%d %H:%M:%S'

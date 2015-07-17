@@ -75,8 +75,9 @@ class db_commands:
         print("ERROR: must supply setting name as a string")
         return -1
       self.load_db()
-      self.cur.execute("select * from settings where name="+settingname)
+      self.cur.execute("select * from settings where name='"+settingname+"'")
       setting = self.cur.fetchone()
+      setting = int(setting[2])
       return setting
 
     def insert_msg(self, data):
