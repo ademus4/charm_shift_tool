@@ -1,1 +1,8 @@
 archive/data/
+tool-cred.json
+.*.swp
+__pycache__/
+*.db
+phantomjs.exe
+\#*\#
+.#*

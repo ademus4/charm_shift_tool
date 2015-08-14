@@ -1,0 +1,58 @@
+body{
+    margin:4em auto;
+    max-width:40em;
+    line-height:1.6;
+    font-size:18px;
+    color:#444;
+    padding:0 1em
+}
+
+h1,h2,h3{
+    line-height:1.2;
+}
+
+input[type=text]{
+    float: right;
+}
+input[type=email]{
+    float: right;
+    margin-left: 1em;
+    width: 20em;
+}
+input[type=checkbox]{
+    margin-left: 2em;
+    margin-right: 1em;
+    float: right;
+}
+input[type=submit]{
+  margin-left: 30%;
+  width: 20em;
+  height: 2em;
+}
+
+.pure-form{
+    line-height:2.0;
+}
+
+.emailphone li {
+    font-weight: bold;
+    display: inline-block;
+    float:right;
+    margin-right: 8.5em;
+    text-indent: -2.5em;
+}
+
+.username li {
+    font-weight: bold;
+    display: inline-block;
+    float: left;
+    margin-left: 0em;
+    text-indent: -2.5em;
+}
+
+.alert li {
+    font-weight: bold;
+    display: inline-block;
+    float: Right;
+    margin-left: 0em;
+}

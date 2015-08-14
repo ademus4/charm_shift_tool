@@ -26,6 +26,7 @@ class lgdb_tools(object):
       elif osname == "posix":
         retstr = subprocess.check_output(["which", "java"])
         retstr = retstr.decode("utf-8")
+        retstr = retstr.replace('\n','')
         if not os.path.isfile(retstr):
           print("Error: Please install Java!")
           exit(-1)

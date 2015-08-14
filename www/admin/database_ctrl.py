@@ -1,4 +1,5 @@
 # Functions for interacting with the sqltie3 database
+
 import sqlite3
 from itertools import chain
 
@@ -196,8 +197,8 @@ class db_commands:
       setting = self.cur.fetchone()
       try:
         setting = int(setting[2])
-      except TypeError:
-        return None
+      except NoneType:
+          return None
       return setting
 
     def insert_msg(self, data):

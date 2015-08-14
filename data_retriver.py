@@ -18,13 +18,15 @@ def fwhm(sigma):
 class Timber_detectors(object):
   def fetch_from_timber(self, variable_name, filename, deltahours):
     a = lgdb_tools()
-    t1 = (datetime.now()-timedelta(deltahours)).strftime(tf)
+    t1 = (datetime.now()-timedelta(hours=deltahours)).strftime(tf)
+    print(t1)
     t_now = (datetime.now()).strftime(tf)
     output = a.get_data(variable_name, t1, t_now, filename)
     return output
 
   def read_timber_data(self, filename, t_target, headers):
       print (filename)
+      sucess = False
       filename = './data/{}.csv'.format(filename)
       try:
         df = pd.read_csv(filename, delimiter=',', names=headers, index_col=False, skiprows=8)
@@ -32,6 +34,7 @@ class Timber_detectors(object):
         return pd.DataFrame()
       df['Time [local]'] = pd.to_datetime(df['Time [local]'])
       df = df.set_index('Time [local]')
+      sucess = True
       return df
 
 class BPM:
@@ -62,17 +65,15 @@ class BPM:
   # 4 time stamped samplings
   def dl_bpm_data(self, url):
     bpm_error = False
+    data_dict = 'Error'
 
     try:
       html = request.urlopen(url).read().decode("utf8")
+      json_table = re.findall(r"startData = (.*);",html)[0]
+      data_dict = json.loads(json_table)
     except:
       bpm_error = True # error when retrieving bpm data, check the mwpc
-    json_table = re.findall(r"startData = (.*);",html)[0]
-    try:
-      data_dict = json.loads(json_table)
-    except ValueError:
       print("Value Error in BPM data_dict!")
-      bpm_error = True
 
     return data_dict, bpm_error
 
@@ -101,11 +102,14 @@ class BPM:
   
   # returns the last samples from all the BPMs
   # both in the Y and X axis
+  # Maybe only check BPM1
   def get_bpm_data(self):
     xdata = []
     ydata = []
     for i in range(1,5):
       data, bpm_error = self.dl_bpm_data(bpm_url+str(i))
+      if bpm_error == True:
+        return xdata, ydata, bpm_error
       xdata.append(self.extract_xy_data(data['X']))
       ydata.append(self.extract_xy_data(data['Y']))
     return xdata, ydata, bpm_error
@@ -248,8 +252,11 @@ class SEC(Timber_detectors):
     # file we downloaded.
     if sum(1 for line in f) > 7:
       data = self.read_timber_data(filename, t_now, headers)
-      data['pot/spill'] = data['Counts'].values*self.calibration['SEC1']
+      if not data.empty: 
+        data['pot/spill'] = data['Counts'].values*self.calibration['SEC1']
+      else:
+        data = False# no SEC data
     else:
     #This should probably be fixed by using a custom pandas DataFrame
-      data = t_now
+      data = False
     return data

@@ -10,6 +10,8 @@ def alert(subject, message, sender, reciever):
     msg['From']     = sender
     msg['To']       = reciever
 
+    print(msg['To'])
+    print(reciever)
     s = smtplib.SMTP('cernmx.cern.ch')
     s.sendmail(msg['From'], msg['To'], msg.as_string())
     s.quit()
